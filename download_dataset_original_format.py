@@ -57,8 +57,9 @@ for i in range(len(j["data"])):
    print curlcmd
    subprocess.call(curlcmd, shell=True)
 
-   # give the disk a second
+   # give slow disks a second
    time.sleep(1)
+
    # check MD5z
    hash = hashlib.md5()
    with open(str(fullpath), 'rb') as afile:
