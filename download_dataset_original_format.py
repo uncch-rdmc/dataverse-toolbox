@@ -8,31 +8,32 @@ import requests
 import subprocess
 import time
 
-# arguments. datasetid and version are required, others optional.
+# arguments. persistentid and version are required, others optional.
 parser = argparse.ArgumentParser(description='Download all files from a given dataset ID, in their original format.')
 parser.add_argument('-d', '--dataverse', default='https://dataverse.unc.edu', help='Dataverse URL. Defaults to https://dataverse.unc.edu')
-parser.add_argument('-i', '--datasetid', type=int, required=True, help='Dataset ID, may be looked-up graphically via Files=>Upload dataset widget.')
+parser.add_argument('-p', '--persistentid', required=True, help='Persistent ID, in the format doi:authority/shoulder/identifier')
 parser.add_argument('-v', '--version', required=True, help='Dataset version. Required: 1.0, 2.1, \":draft\", \":latest\", \":latest-published\"')
 parser.add_argument('-o', '--outputdir', help='Output directory for dataset files, relative to CWD. Defaults to value of DatasetID.')
 parser.add_argument('-t', '--apitoken', help='API token. Required for private/restricted datasets.')
 
 args = parser.parse_args()
 if args.outputdir is None:
-   args.outputdir = args.datasetid
+   opd = args.persistentid.split('/')[-1]
+else:
+   opd = args.outputdir
 
 cwd = os.getcwd()
-opd = str(args.outputdir)
 fwd = cwd + '/' + opd
 if os.path.exists(fwd) is False:
    os.mkdir(fwd)
 
 # get file metadata from the dataset
-url = args.dataverse + '/api/datasets/' + str(args.datasetid) + '/versions/' + args.version + '/files'
-#print "Requesting file metadata from " + url
+url = args.dataverse + '/api/datasets/:persistentId/versions/' + args.version + '/files?persistentId=' + args.persistentid
+print "Requesting file metadata from " + url
 
 if args.apitoken is not None:
    api = args.apitoken
-   url = url + '?key=' + api
+   url = url + '&key=' + api
 
 r = requests.get(url)
 j = r.json()
@@ -74,4 +75,4 @@ for i in range(len(j["data"])):
 
 # Dataverse's JSON starts at zero like a proper count should.
 count = i + 1
-print str(count) + " files downloaded from dataset ID " + str(args.datasetid) + "."
+print str(count) + " files downloaded from dataset ID " + str(args.persistentid) + "."
