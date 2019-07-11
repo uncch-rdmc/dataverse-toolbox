@@ -54,8 +54,7 @@ for i in range(len(j["data"])):
    # curl to present directory (sigh) but use filename.label as output
    # -s suppresses progress bar, -S shows errors, -o is the output path/file
    fullpath = fwd + '/' + filename
-   curlcmd = 'curl -s -S -o "' + fullpath + '" ' + '\"' + dlurl + '\"'
-   print curlcmd
+   curlcmd = 'curl -s -S -L -o "' + fullpath + '" ' + '\"' + dlurl + '\"'
    subprocess.call(curlcmd, shell=True)
 
    # give slow disks a second
