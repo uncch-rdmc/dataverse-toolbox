@@ -42,35 +42,46 @@ j = r.json()
 for i in range(len(j["data"])):
    fileid = j["data"][i]["dataFile"]["id"]
    filename = j["data"][i]["label"]
+   fullpath = fwd + '/' + filename
    md5 = j["data"][i]["dataFile"]["md5"]
    #print str(fileid) + ': ' + filename
 
-   # construct download URL
-   dlurl = args.dataverse + '/api/access/datafile/' + str(fileid) + '?format=original'
-   if args.apitoken is not None:
-      dlurl = dlurl + '&key=' + api
-   print "downloading from " + dlurl
-
-   # curl to present directory (sigh) but use filename.label as output
-   # -s suppresses progress bar, -S shows errors, -o is the output path/file
-   fullpath = fwd + '/' + filename
-   curlcmd = 'curl -s -S -L -o "' + fullpath + '" ' + '\"' + dlurl + '\"'
-   subprocess.call(curlcmd, shell=True)
-
-   # give slow disks a second
-   time.sleep(1)
-
-   # check MD5z
-   hash = hashlib.md5()
-   with open(str(fullpath), 'rb') as afile:
-      buf = afile.read()
-      hash.update(buf)
-      localmd5 = hash.hexdigest()
-
-   if md5 == localmd5:
-      print 'MD5 sums match: Dataverse ' + md5 + ' Local copy ' + localmd5
+   # does file already exist? do md5s match?
+   if os.path.isfile(fullpath) is True:
+     hash = hashlib.md5()
+     with open(str(fullpath), 'rb') as afile:
+       buf = afile.read()
+       hash.update(buf)
+       prevmd5 = hash.hexdigest()
+       if md5 == prevmd5:
+          print("MD5 match: " + fullpath)
+          continue
    else:
-      print 'CHECKSUM ERROR: Dataverse ' + md5 + ' Local copy ' + localmd5
+     # file not present or md5 mismatch.
+     dlurl = args.dataverse + '/api/access/datafile/' + str(fileid) + '?format=original'
+     if args.apitoken is not None:
+        dlurl = dlurl + '&key=' + api
+        print "downloading from " + dlurl
+
+        # curl to present directory (sigh) but use filename.label as output
+        # -s suppresses progress bar, -S shows errors, -L follows redirects, -o is the output path/file
+        curlcmd = 'curl -s -S -L -o "' + fullpath + '" ' + '\"' + dlurl + '\"'
+        subprocess.call(curlcmd, shell=True)
+
+        # give slow disks a second
+        time.sleep(1)
+
+        # check md5 against downloaded file
+        hash = hashlib.md5()
+        with open(str(fullpath), 'rb') as afile:
+          buf = afile.read()
+          hash.update(buf)
+          localmd5 = hash.hexdigest()
+
+        if md5 == localmd5:
+           print 'MD5 match: Dataverse ' + md5 + ' Local copy ' + localmd5
+        else:
+           print 'CHECKSUM ERROR: Dataverse ' + md5 + ' Local copy ' + localmd5
 
 # Dataverse's JSON starts at zero like a proper count should.
 count = i + 1
