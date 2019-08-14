@@ -23,8 +23,9 @@ file = args.file
 file_content = 'content: %s' % datetime.now()
 files = {'file': (file, file_content)}
 
-# dataset id
+# construct url with persistent id
 url_persistent_id = '%s/api/datasets/:persistentId/add?persistentId=%s&key=%s' % (dataverse, persistentid, apitoken)
 
+# fire off request
 r = requests.post(url_persistent_id, files=files)
 print r.json()
