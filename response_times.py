@@ -19,12 +19,12 @@ static = [
         ]
 
 def time_url(url):
-  response = requests.get(url)
-  print(str(response.elapsed.total_seconds()) + "\t" + url)
+  for t in range(6):
+    response = requests.get(url)
+    print(str(response.elapsed.total_seconds()) + "\t" + url)
   
 # call homepage twice, once after launch, second with cache
 url = dv + '/'
-time_url(url)
 time_url(url)
 
 # time static calls  
