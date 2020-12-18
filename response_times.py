@@ -7,6 +7,7 @@ import requests
 # arguments. persistentid and version are required, others optional.
 parser = argparse.ArgumentParser(description='Download all files from a given dataset ID, in their original format.')
 parser.add_argument('-d', '--dataverse', default='http://localhost:8080', help='Dataverse URL. Defaults to http://localhost:8080')
+parser.add_argument('-i', '--iterations', default='5', help='calls per page. defaults to 5')
 
 args = parser.parse_args()
 if args.dataverse is None:  
@@ -14,19 +15,26 @@ if args.dataverse is None:
 else:
   dv = args.dataverse
 
+if args.iterations is None:
+  iter = 5
+else:
+  iter = int(args.iterations)
+
 static = [
+        '/',
         '/dataverse/root/?q=test'
         ]
 
 def time_url(url):
-  for t in range(6):
+  for t in range(iter):
+    times = []
     response = requests.get(url)
     print(str(response.elapsed.total_seconds()) + "\t" + url)
-  
-# call homepage twice, once after launch, second with cache
-url = dv + '/'
-time_url(url)
+    times.append(int(response.elapsed.total_seconds()))
 
+  avg = sum(times) / iter
+  print(url + "average:\t" + str(avg) + " seconds.")
+  
 # time static calls  
 for req in static:
   url = dv + req
