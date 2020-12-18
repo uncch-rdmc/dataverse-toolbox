@@ -26,14 +26,15 @@ static = [
         ]
 
 def time_url(url):
+  times = []
   for t in range(iter):
-    times = []
     response = requests.get(url)
     print(str(response.elapsed.total_seconds()) + "\t" + url)
-    times.append(int(response.elapsed.total_seconds()))
+    times.append(response.elapsed.total_seconds())
 
-  avg = sum(times) / iter
+  avg = sum(times) / int(iter)
   print(url + "average:\t" + str(avg) + " seconds.")
+  times.clear()
   
 # time static calls  
 for req in static:
