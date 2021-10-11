@@ -58,6 +58,10 @@ else:
           dvurl = dataverse + '/api/dataverses/' + alias + '/storagesize?key=' + token
           dr = requests.get(dvurl)
           dj = dr.json()
-          message = dj["data"]["message"]
+          error = "Couldn't get storagesize for collection: " + alias
+          try:
+             message = dj["data"]["message"]
+          except Exception as ex:
+             print(error)
           size = int(''.join(filter(str.isdigit, message)))
           print(alias + ': ' + str(size))
