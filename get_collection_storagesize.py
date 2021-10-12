@@ -31,10 +31,34 @@ def get_size(dataverse,collection,token):
     dvurl = dataverse + '/api/dataverses/' + collection + '/storagesize?key=' + token
     r = requests.get(dvurl)
     j = r.json()
-    message = j["data"]["message"]
     # strip out "size of this ... bytes"
+    error = "Couldn't get storagesize for collection: " + collection
+    try:
+       message = j["data"]["message"]
+    except Exception as ex:
+       print(error)
     size = int(''.join(filter(str.isdigit, message)))
-    print(collection + ': ' + str(size))
+    return size
+
+def get_filecount(dataverse,collection,token):
+    dvfilecount = 0
+    dvcontentsurl = dataverse + '/api/dataverses/' + collection + '/contents'
+    dvcr = requests.get(dvcontentsurl)
+    dvcj = dvcr.json()
+    # iterate over collection contents json
+    for i in range(len(dvcj["data"])):
+        id = dvcj["data"][i]["id"]
+        type = dvcj["data"][i]["type"]
+        if (type == 'dataset'):
+           dscontentsurl = dataverse + '/api/datasets/' + str(id) + '/versions/:latest/files'
+           dscr = requests.get(dscontentsurl)
+           dscj = dscr.json()
+           try:
+               dsfilecount = len(dscj["data"])
+           except:
+               dsfilecount = 0
+           dvfilecount = dvfilecount + dsfilecount
+    return dvfilecount
 
 # collection specified
 if all is False:
@@ -52,16 +76,7 @@ else:
           aliasurl = dataverse + '/api/dataverses/' + str(collectionid)
           ar = requests.get(aliasurl)
           aj = ar.json()
-          alias = aj["data"]["alias"]
-          # throws I/O errors in TRSA case
-          #dvurl = dataverse + '/api/dataverses/' + alias + '/storagesize?includeCached=true&key=' + token
-          dvurl = dataverse + '/api/dataverses/' + alias + '/storagesize?key=' + token
-          dr = requests.get(dvurl)
-          dj = dr.json()
-          error = "Couldn't get storagesize for collection: " + alias
-          try:
-             message = dj["data"]["message"]
-          except Exception as ex:
-             print(error)
-          size = int(''.join(filter(str.isdigit, message)))
-          print(alias + ': ' + str(size))
+          collection = aj["data"]["alias"]
+          size = get_size(dataverse,collection,token)
+          dvfilecount = get_filecount(dataverse,collection,token)
+          print(collection + ': ' + str(size) + ' bytes, ' + str(dvfilecount) + ' files.')
