@@ -62,9 +62,16 @@ def get_filecount(dataverse,collection,token):
 
 # collection specified
 if all is False:
-   get_size(dataverse,collection,token)
+   size = get_size(dataverse,collection,token)
+   dvfilecount = get_filecount(dataverse,collection,token)
+   print(collection + ': ' + str(size) + ' bytes, ' + str(dvfilecount) + ' files.')
 else:
-   # iterate through collections
+   # start with the root dataverse
+   collection = 'root'
+   size = get_size(dataverse,collection,token)
+   dvfilecount = get_filecount(dataverse,collection,token)
+   print(collection + ': ' + str(size) + ' bytes, ' + str(dvfilecount) + ' files.')
+   # now iterate through sub-collections
    instanceurl = dataverse + '/api/dataverses/root/contents'
    r = requests.get(instanceurl)
    j = r.json()
