@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 import argparse
+import math
 import requests
 import sys
-import math
 
 parser = argparse.ArgumentParser(description='Search a given Dataverse API for a given term, under an optional Dataverse alias')
 parser.add_argument('-d', '--dataverse', default='https://dataverse-awstest.irss.unc.edu', help='Dataverse URL. Defaults to https://dataverse-awstest.irss.unc.edu')
