@@ -3,6 +3,7 @@
 import argparse
 import requests
 import sys
+import math
 
 parser = argparse.ArgumentParser(description='Search a given Dataverse API for a given term, under an optional Dataverse alias')
 parser.add_argument('-d', '--dataverse', default='https://dataverse-awstest.irss.unc.edu', help='Dataverse URL. Defaults to https://dataverse-awstest.irss.unc.edu')
@@ -60,11 +61,23 @@ def get_filecount(dataverse,collection,token):
            dvfilecount = dvfilecount + dsfilecount
     return dvfilecount
 
+# Function for converting bytes to more human-readable B, KB, MB, etc
+def format_size(byte_size):
+   if byte_size == 0:
+       return '0B'
+   size_name = ('B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB')
+   i = int(math.floor(math.log(byte_size, 1024)))
+   p = math.pow(1024, i)
+   s = round(byte_size / p, 2)
+   return '%s %s' % (s, size_name[i])
+
 # collection specified
 if all is False:
    size = get_size(dataverse,collection,token)
+   readablesize = format_size(size)
    dvfilecount = get_filecount(dataverse,collection,token)
-   print(collection + ': ' + str(size) + ' bytes, ' + str(dvfilecount) + ' files.')
+   print(collection + ': ' + str(size) + ' bytes' + ' (' + readablesize + '), ' + str(dvfilecount) + ' files.')
+   
 else:
    # start with the root dataverse
    collection = 'root'
@@ -86,4 +99,4 @@ else:
           collection = aj["data"]["alias"]
           size = get_size(dataverse,collection,token)
           dvfilecount = get_filecount(dataverse,collection,token)
-          print(collection + ': ' + str(size) + ' bytes, ' + str(dvfilecount) + ' files.')
+          print(collection + ': ' + str(size) + ' bytes' + ' (' + readablesize + '), ' + str(dvfilecount) + ' files.')
