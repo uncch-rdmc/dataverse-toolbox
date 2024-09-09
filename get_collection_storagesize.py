@@ -30,7 +30,7 @@ def get_size(dataverse,collection,token):
     # throws I/O errors in TRSA case
     #dvurl = dataverse + '/api/dataverses/' + collection + '/storagesize?includeCached=true&key=' + token
     dvurl = dataverse + '/api/dataverses/' + collection + '/storagesize?key=' + token
-    r = requests.get(dvurl)
+    r = requests.get(dvurl)   
     j = r.json()
     # strip out "size of this ... bytes"
     error = "Couldn't get storagesize for collection: " + collection
@@ -77,15 +77,16 @@ if all is False:
    readablesize = format_size(size)
    dvfilecount = get_filecount(dataverse,collection,token)
    print(collection + ': ' + str(size) + ' bytes' + ' (' + readablesize + '), ' + str(dvfilecount) + ' files.')
-   
+     
 else:
-   # start with the root dataverse
-   collection = 'root'
-   size = get_size(dataverse,collection,token)
-   dvfilecount = get_filecount(dataverse,collection,token)
-   print(collection + ': ' + str(size) + ' bytes, ' + str(dvfilecount) + ' files.')
-   # now iterate through sub-collections
-   instanceurl = dataverse + '/api/dataverses/root/contents'
+   # don't process root for performance reasons
+   #collection = 'root'
+   #size = get_size(dataverse,collection,token)
+   #dvfilecount = get_filecount(dataverse,collection,token)
+   #print(collection + ': ' + str(size) + ' bytes, ' + str(dvfilecount) + ' files.')
+   
+   # iterate through sub-collections
+   instanceurl = dataverse + '/api/dataverses/unc/contents'
    r = requests.get(instanceurl)
    j = r.json()
    for i in range(len(j["data"])):
@@ -97,6 +98,9 @@ else:
           ar = requests.get(aliasurl)
           aj = ar.json()
           collection = aj["data"]["alias"]
+          # get size
           size = get_size(dataverse,collection,token)
+          readablesize = format_size(size)
           dvfilecount = get_filecount(dataverse,collection,token)
           print(collection + ': ' + str(size) + ' bytes' + ' (' + readablesize + '), ' + str(dvfilecount) + ' files.')
+          
